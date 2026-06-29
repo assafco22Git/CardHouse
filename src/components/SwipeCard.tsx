@@ -48,8 +48,7 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
         <motion.div
           {...handlers}
           className="absolute inset-0 rounded-2xl cursor-grab active:cursor-grabbing select-none overflow-hidden"
-          style={{ background: '#fffdf8', border: '1px solid #d4c9b0', boxShadow: '0 4px 24px rgba(44,31,14,0.10)' }}
-          style={{ x, rotate }}
+          style={{ x, rotate, background: '#fffdf8', border: '1px solid #d4c9b0', boxShadow: '0 4px 24px rgba(44,31,14,0.10)' }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           onDragEnd={handleDragEnd}

@@ -9,10 +9,29 @@ interface Props {
 
 type Status = 'idle' | 'fetching' | 'saving' | 'success' | 'error'
 
+const CITIES = ['Tel Aviv', 'Jerusalem', 'Haifa', 'Beer Sheva', 'Netanya', 'Eilat']
+
 export function AdminPage({ user, onBack }: Props) {
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
+  const [syncCity, setSyncCity] = useState('Tel Aviv')
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState('')
+
+  const handleSync = async () => {
+    setSyncing(true)
+    setSyncResult('')
+    try {
+      const res = await fetch(`/api/yad2?city=${encodeURIComponent(syncCity)}`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSyncResult(`✓ ${data.saved} new listings saved (${data.total} found)`)
+    } catch (e) {
+      setSyncResult(`❌ ${e instanceof Error ? e.message : 'Failed'}`)
+    }
+    setSyncing(false)
+  }
 
   const handleSave = async () => {
     if (!url.trim()) return
@@ -55,8 +74,38 @@ export function AdminPage({ user, onBack }: Props) {
         <button onClick={onBack} style={{ color: '#8a7a60', fontSize: 14 }}>← Back</button>
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6" style={{ gap: 24 }}>
-        <p style={{ fontSize: 15, color: '#8a7a60', textAlign: 'center' }}>
+      <div className="flex-1 flex flex-col items-center justify-center px-6" style={{ gap: 32 }}>
+
+        {/* Auto-sync from Yad2 */}
+        <div style={{ width: '100%', maxWidth: 480, background: '#fffdf8', border: '1px solid #d4c9b0', borderRadius: 14, padding: '18px 20px' }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: '#2c1f0e', margin: '0 0 4px' }}>🔄 Auto-sync from Yad2</p>
+          <p style={{ fontSize: 12, color: '#8a7a60', margin: '0 0 14px' }}>Pulls latest rentals automatically every hour</p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <select
+              value={syncCity}
+              onChange={e => setSyncCity(e.target.value)}
+              style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: '1px solid #d4c9b0', background: '#f5f0e6', color: '#2c1f0e', fontSize: 14 }}
+            >
+              {CITIES.map(c => <option key={c}>{c}</option>)}
+            </select>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: syncing ? '#d4c9b0' : '#c4952a', color: '#fffdf8', fontSize: 14, fontWeight: 600, cursor: syncing ? 'not-allowed' : 'pointer' }}
+            >
+              {syncing ? '⏳' : 'Sync now'}
+            </button>
+          </div>
+          {syncResult && <p style={{ fontSize: 12, marginTop: 10, color: syncResult.startsWith('✓') ? '#2d6a2d' : '#c0392b' }}>{syncResult}</p>}
+        </div>
+
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
+          <span style={{ fontSize: 12, color: '#8a7a60' }}>or paste a link manually</span>
+          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
+        </div>
+
+        <p style={{ fontSize: 15, color: '#8a7a60', textAlign: 'center', margin: '-16px 0 0' }}>
           Paste a Yad2 or Madlan link — we'll do the rest
         </p>
 

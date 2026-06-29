@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/yad2?city=Tel+Aviv&minPrice=0&maxPrice=10000",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

@@ -14,23 +14,23 @@ export function SwipePage({ user, onSignOut }: Props) {
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: '#f5f0e6' }}>
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #e0d8c8' }}>
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🃏</span>
-          <span className="font-black text-2xl tracking-tight" style={{ color: '#2c1f0e' }}>CardHouse</span>
+      <header className="flex items-center justify-between px-8 py-7" style={{ borderBottom: '1px solid #e0d8c8' }}>
+        <div className="flex items-center gap-4">
+          <span className="text-4xl">🃏</span>
+          <span className="font-black text-3xl tracking-tight" style={{ color: '#2c1f0e' }}>CardHouse</span>
         </div>
         <div className="flex items-center gap-4">
           {user.user_metadata?.avatar_url ? (
             <img
               src={user.user_metadata.avatar_url}
               alt="avatar"
-              className="w-9 h-9 rounded-full"
+              className="w-11 h-11 rounded-full"
               style={{ border: '2px solid #c4952a' }}
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020' }}>
+            <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold"
+              style={{ background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020', fontSize: 16 }}>
               {user.email?.[0]?.toUpperCase()}
             </div>
           )}

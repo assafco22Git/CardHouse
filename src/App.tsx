@@ -4,8 +4,6 @@ import { LoginPage } from './pages/LoginPage'
 import { SwipePage } from './pages/SwipePage'
 import { AdminPage } from './pages/AdminPage'
 
-const ADMIN_EMAIL = 'assafco22@gmail.com'
-
 export default function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const [page, setPage] = useState<'swipe' | 'admin'>('swipe')
@@ -26,7 +24,7 @@ export default function App() {
     <SwipePage
       user={user}
       onSignOut={signOut}
-      isAdmin={user.email === ADMIN_EMAIL}
+      isAdmin={true}
       onAdmin={() => setPage('admin')}
     />
   )

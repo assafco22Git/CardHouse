@@ -36,8 +36,8 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
   if (!isTop) {
     return (
       <motion.div
-        className="absolute inset-0 rounded-2xl bg-slate-800 border border-slate-700"
-        style={{ scale: 0.95, y: 16 }}
+        className="absolute inset-0 rounded-2xl"
+        style={{ scale: 0.95, y: 16, background: '#ede8dc', border: '1px solid #d4c9b0' }}
       />
     )
   }
@@ -47,7 +47,8 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
       {!gone && (
         <motion.div
           {...handlers}
-          className="absolute inset-0 rounded-2xl bg-slate-800 border border-slate-700 cursor-grab active:cursor-grabbing select-none overflow-hidden"
+          className="absolute inset-0 rounded-2xl cursor-grab active:cursor-grabbing select-none overflow-hidden"
+          style={{ background: '#fffdf8', border: '1px solid #d4c9b0', boxShadow: '0 4px 24px rgba(44,31,14,0.10)' }}
           style={{ x, rotate }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
@@ -60,12 +61,12 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
           )}
 
           <div className="p-6">
-            <h2 className="text-xl font-bold text-white mb-2">{card.title}</h2>
-            <p className="text-slate-400 text-sm leading-relaxed">{card.description}</p>
+            <h2 className="text-xl font-bold mb-2" style={{ color: '#2c1f0e' }}>{card.title}</h2>
+            <p className="text-sm leading-relaxed" style={{ color: '#8a7a60' }}>{card.description}</p>
             {card.tags && card.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {card.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded-full">
+                  <span key={tag} className="px-2 py-1 text-xs rounded-full" style={{ background: '#f0e8d4', color: '#8a6020', border: '1px solid #c8a860' }}>
                     {tag}
                   </span>
                 ))}

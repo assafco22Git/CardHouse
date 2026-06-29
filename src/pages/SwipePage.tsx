@@ -12,22 +12,32 @@ export function SwipePage({ user, onSignOut }: Props) {
   const { cards, loading, recordSwipe } = useCards(user.id)
 
   return (
-    <div className="flex flex-col min-h-dvh bg-slate-900">
+    <div className="flex flex-col min-h-dvh" style={{ background: '#f5f0e6' }}>
       {/* Header */}
-      <header className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🃏</span>
-          <span className="font-black text-white text-lg tracking-tight">CardHouse</span>
-        </div>
+      <header className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #e0d8c8' }}>
         <div className="flex items-center gap-3">
-          <img
-            src={user.user_metadata?.avatar_url}
-            alt="avatar"
-            className="w-8 h-8 rounded-full bg-slate-700"
-          />
+          <span className="text-3xl">🃏</span>
+          <span className="font-black text-2xl tracking-tight" style={{ color: '#2c1f0e' }}>CardHouse</span>
+        </div>
+        <div className="flex items-center gap-4">
+          {user.user_metadata?.avatar_url ? (
+            <img
+              src={user.user_metadata.avatar_url}
+              alt="avatar"
+              className="w-9 h-9 rounded-full"
+              style={{ border: '2px solid #c4952a' }}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+              style={{ background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020' }}>
+              {user.email?.[0]?.toUpperCase()}
+            </div>
+          )}
           <button
             onClick={onSignOut}
-            className="text-slate-400 text-sm hover:text-white transition-colors"
+            className="text-sm transition-colors"
+            style={{ color: '#8a7a60' }}
           >
             Sign out
           </button>
@@ -58,7 +68,8 @@ export function SwipePage({ user, onSignOut }: Props) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => recordSwipe(cards[0].id, 'left')}
-              className="w-14 h-14 rounded-full bg-slate-800 border border-red-500/40 text-red-400 text-2xl flex items-center justify-center shadow-lg"
+              className="w-14 h-14 rounded-full text-2xl flex items-center justify-center"
+              style={{ background: '#fce8e8', border: '1.5px solid #e08080', color: '#c0392b' }}
             >
               ✕
             </motion.button>
@@ -66,7 +77,8 @@ export function SwipePage({ user, onSignOut }: Props) {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => recordSwipe(cards[0].id, 'right')}
-              className="w-14 h-14 rounded-full bg-slate-800 border border-green-500/40 text-green-400 text-2xl flex items-center justify-center shadow-lg"
+              className="w-14 h-14 rounded-full text-2xl flex items-center justify-center"
+              style={{ background: '#f5ecd4', border: '1.5px solid #c4952a', color: '#8a6020' }}
             >
               ♥
             </motion.button>

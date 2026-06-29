@@ -7,7 +7,7 @@ interface Props {
 
 export function LoginPage({ onSignIn }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-dvh bg-slate-900 px-6">
+    <div className="flex flex-col items-center justify-center min-h-dvh px-6" style={{ background: '#f5f0e6' }}>
       <motion.div
         initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
@@ -16,8 +16,8 @@ export function LoginPage({ onSignIn }: Props) {
       >
         <div className="flex flex-col items-center gap-3">
           <span className="text-7xl">🃏</span>
-          <h1 className="text-4xl font-black text-white tracking-tight">CardHouse</h1>
-          <p className="text-slate-400 text-center">Swipe through cards. Build your collection.</p>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: '#2c1f0e' }}>CardHouse</h1>
+          <p className="text-center" style={{ color: '#8a7a60' }}>Swipe through cards. Build your collection.</p>
         </div>
 
         {!isConfigured && (
@@ -33,7 +33,8 @@ export function LoginPage({ onSignIn }: Props) {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onSignIn}
-          className="flex items-center gap-3 w-full justify-center bg-white text-slate-900 font-semibold px-6 py-3.5 rounded-xl shadow-lg hover:bg-slate-100 transition-colors"
+          className="flex items-center gap-3 w-full justify-center font-semibold px-6 py-3.5 rounded-xl transition-colors"
+          style={{ background: '#fffdf8', color: '#2c1f0e', border: '1px solid #d4c9b0', boxShadow: '0 2px 12px rgba(44,31,14,0.08)' }}
         >
           <GoogleIcon />
           Continue with Google

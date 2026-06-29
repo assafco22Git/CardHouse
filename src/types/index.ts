@@ -4,6 +4,8 @@ export interface Card {
   description: string
   image_url?: string
   tags?: string[]
+  location?: string
+  budget?: number
   created_at: string
   user_id: string
 }
@@ -16,3 +18,8 @@ export interface SwipeAction {
 }
 
 export type SwipeDirection = 'left' | 'right' | null
+
+export interface Filters {
+  location: string
+  maxBudget: number | null
+}

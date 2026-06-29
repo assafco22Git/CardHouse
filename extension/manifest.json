@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "CardHouse Saver",
+  "version": "1.0",
+  "description": "Save listings from Yad2, Madlan, and Facebook Marketplace to CardHouse",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://www.yad2.co.il/*",
+    "https://www.madlan.co.il/*",
+    "https://www.facebook.com/marketplace/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.yad2.co.il/item/*",
+        "https://www.madlan.co.il/listing/*",
+        "https://www.facebook.com/marketplace/item/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CardHouse Saver"
+  }
+}

@@ -17,7 +17,13 @@ export function useAuth() {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      const u = session?.user ?? null
+      setUser(u)
+      // Store user ID so the Chrome extension can use it
+      try {
+        if (u) localStorage.setItem('cardhouse_user_id', u.id)
+        else localStorage.removeItem('cardhouse_user_id')
+      } catch {}
     })
 
     return () => subscription.unsubscribe()

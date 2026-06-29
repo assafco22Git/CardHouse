@@ -8,6 +8,8 @@ import type { Filters } from '../types'
 interface Props {
   user: User
   onSignOut: () => void
+  isAdmin: boolean
+  onAdmin: () => void
 }
 
 const ISRAEL_CITIES = ['All', 'Tel Aviv', 'Jerusalem', 'Haifa', 'Beer Sheva', 'Eilat']
@@ -19,7 +21,7 @@ const BUDGET_OPTIONS = [
   { label: '₪5,000', value: 5000 },
 ]
 
-export function SwipePage({ user, onSignOut }: Props) {
+export function SwipePage({ user, onSignOut, isAdmin, onAdmin }: Props) {
   const [filters, setFilters] = useState<Filters>({ location: '', maxBudget: null })
   const { cards, loading, recordSwipe } = useCards(user.id, filters)
 
@@ -44,6 +46,11 @@ export function SwipePage({ user, onSignOut }: Props) {
               <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {user.email?.[0]?.toUpperCase()}
               </div>
+            )}
+            {isAdmin && (
+              <button onClick={onAdmin} style={{ color: '#c4952a', fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                + Add
+              </button>
             )}
             <button onClick={onSignOut} style={{ color: '#8a7a60', fontSize: 14, whiteSpace: 'nowrap' }}>
               Sign out

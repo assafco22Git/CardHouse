@@ -6,6 +6,7 @@ export interface Card {
   tags?: string[]
   location?: string
   budget?: number
+  source_url?: string
   created_at: string
   user_id: string
 }

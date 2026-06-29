@@ -18,7 +18,7 @@ export function CardStack({ cards, onSwipe }: Props) {
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ height: 460 }}>
+    <div className="relative mx-auto" style={{ width: 360, height: 460 }}>
       {cards.slice(0, 2).map((card, i) => (
         <SwipeCard
           key={card.id}

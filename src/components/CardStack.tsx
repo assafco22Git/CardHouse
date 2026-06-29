@@ -19,11 +19,11 @@ export function CardStack({ cards, onSwipe }: Props) {
 
   return (
     <div className="relative mx-auto" style={{ width: 360, height: 460 }}>
-      {cards.slice(0, 2).map((card, i) => (
+      {cards.slice(0, 2).reverse().map((card, i, arr) => (
         <SwipeCard
           key={card.id}
           card={card}
-          isTop={i === 0}
+          isTop={i === arr.length - 1}
           onSwipe={(dir) => onSwipe(card.id, dir)}
         />
       ))}

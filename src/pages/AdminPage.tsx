@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
@@ -7,43 +7,68 @@ interface Props {
   onBack: () => void
 }
 
-type Status = 'idle' | 'fetching' | 'saving' | 'success' | 'error'
-
-const CITIES = ['Tel Aviv', 'Jerusalem', 'Haifa', 'Beer Sheva', 'Netanya', 'Eilat']
+type Status = 'idle' | 'reading' | 'saving' | 'success' | 'error'
 
 export function AdminPage({ user, onBack }: Props) {
-  const [url, setUrl] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
-  const [message, setMessage] = useState('')
-  const [syncCity, setSyncCity] = useState('Tel Aviv')
-  const [syncing, setSyncing] = useState(false)
-  const [syncResult, setSyncResult] = useState('')
+  // Screenshot flow
+  const [imgStatus, setImgStatus] = useState<Status>('idle')
+  const [imgMessage, setImgMessage] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const handleSync = async () => {
-    setSyncing(true)
-    setSyncResult('')
+  // URL paste flow
+  const [url, setUrl] = useState('')
+  const [urlStatus, setUrlStatus] = useState<Status>('idle')
+  const [urlMessage, setUrlMessage] = useState('')
+
+  const handleImageUpload = async (file: File) => {
+    setImgStatus('reading')
+    setImgMessage('')
     try {
-      const res = await fetch(`/api/yad2?city=${encodeURIComponent(syncCity)}`)
+      const reader = new FileReader()
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve((reader.result as string).split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+
+      const res = await fetch('/api/extract-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mediaType: file.type }),
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setSyncResult(`✓ ${data.saved} new listings saved (${data.total} found)`)
+
+      setImgStatus('saving')
+      const { error: err } = await supabase.from('cards').insert({
+        title: data.title || 'Untitled listing',
+        description: data.description || '',
+        image_url: data.image_url || null,
+        location: data.location || null,
+        budget: data.budget || null,
+        source_url: null,
+        user_id: user.id,
+      })
+      if (err) throw new Error(err.message)
+
+      setImgStatus('success')
+      setImgMessage(data.title || 'Listing saved')
     } catch (e) {
-      setSyncResult(`❌ ${e instanceof Error ? e.message : 'Failed'}`)
+      setImgStatus('error')
+      setImgMessage(e instanceof Error ? e.message : 'Something went wrong')
     }
-    setSyncing(false)
   }
 
-  const handleSave = async () => {
+  const handleUrlSave = async () => {
     if (!url.trim()) return
-    setStatus('fetching')
-    setMessage('')
-
+    setUrlStatus('reading')
+    setUrlMessage('')
     try {
       const res = await fetch(`/api/scrape?url=${encodeURIComponent(url.trim())}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not extract listing')
 
-      setStatus('saving')
+      setUrlStatus('saving')
       const { error: err } = await supabase.from('cards').insert({
         title: data.title || url,
         description: data.description || '',
@@ -53,111 +78,102 @@ export function AdminPage({ user, onBack }: Props) {
         source_url: url.trim(),
         user_id: user.id,
       })
-
       if (err) throw new Error(err.message)
-      setStatus('success')
-      setMessage(data.title || 'Listing saved')
+      setUrlStatus('success')
+      setUrlMessage(data.title || 'Listing saved')
       setUrl('')
     } catch (e) {
-      setStatus('error')
-      setMessage(e instanceof Error ? e.message : 'Something went wrong')
+      setUrlStatus('error')
+      setUrlMessage(e instanceof Error ? e.message : 'Something went wrong')
     }
   }
 
+  const busy = imgStatus === 'reading' || imgStatus === 'saving'
+
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: '#f5f0e6' }}>
-      <header className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #e0d8c8' }}>
-        <div className="flex items-center gap-4">
-          <span style={{ fontSize: 36 }}>🃏</span>
-          <span className="font-black tracking-tight" style={{ fontSize: 28, color: '#2c1f0e' }}>Add Listing</span>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#f5f0e6', overflow: 'hidden' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #e0d8c8', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 24 }}>🃏</span>
+          <span style={{ fontWeight: 900, fontSize: 20, color: '#2c1f0e' }}>Add Listing</span>
         </div>
         <button onClick={onBack} style={{ color: '#8a7a60', fontSize: 14 }}>← Back</button>
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6" style={{ gap: 32 }}>
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px', gap: 16 }}>
 
-        {/* Auto-sync from Yad2 */}
-        <div style={{ width: '100%', maxWidth: 480, background: '#fffdf8', border: '1px solid #d4c9b0', borderRadius: 14, padding: '18px 20px' }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: '#2c1f0e', margin: '0 0 4px' }}>🔄 Auto-sync from Yad2</p>
-          <p style={{ fontSize: 12, color: '#8a7a60', margin: '0 0 14px' }}>Pulls latest rentals automatically every hour</p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <select
-              value={syncCity}
-              onChange={e => setSyncCity(e.target.value)}
-              style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: '1px solid #d4c9b0', background: '#f5f0e6', color: '#2c1f0e', fontSize: 14 }}
-            >
-              {CITIES.map(c => <option key={c}>{c}</option>)}
-            </select>
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: syncing ? '#d4c9b0' : '#c4952a', color: '#fffdf8', fontSize: 14, fontWeight: 600, cursor: syncing ? 'not-allowed' : 'pointer' }}
-            >
-              {syncing ? '⏳' : 'Sync now'}
-            </button>
-          </div>
-          {syncResult && <p style={{ fontSize: 12, marginTop: 10, color: syncResult.startsWith('✓') ? '#2d6a2d' : '#c0392b' }}>{syncResult}</p>}
-        </div>
+        {/* Screenshot upload — primary method */}
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#2c1f0e', marginBottom: 8 }}>📸 Screenshot a listing</p>
+          <p style={{ fontSize: 12, color: '#8a7a60', marginBottom: 12, lineHeight: 1.5 }}>
+            Take a screenshot of any listing — Yad2, Facebook, WhatsApp, anything. Claude reads it and saves the details automatically.
+          </p>
 
-        <div style={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
-          <span style={{ fontSize: 12, color: '#8a7a60' }}>or paste a link manually</span>
-          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
-        </div>
-
-        <p style={{ fontSize: 15, color: '#8a7a60', textAlign: 'center', margin: '-16px 0 0' }}>
-          Paste a Yad2 or Madlan link — we'll do the rest
-        </p>
-
-        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              borderRadius: 14,
-              border: '1.5px solid #d4c9b0',
-              background: '#fffdf8',
-              color: '#2c1f0e',
-              fontSize: 15,
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-            placeholder="https://www.yad2.co.il/item/..."
-            value={url}
-            onChange={e => { setUrl(e.target.value); setStatus('idle'); setMessage('') }}
-            onKeyDown={e => e.key === 'Enter' && handleSave()}
-            autoFocus
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
           />
 
           <button
-            onClick={handleSave}
-            disabled={!url.trim() || status === 'fetching' || status === 'saving'}
+            onClick={() => { if (!busy) { setImgStatus('idle'); setImgMessage(''); fileRef.current?.click() } }}
+            disabled={busy}
             style={{
-              padding: '14px 0',
-              borderRadius: 14,
-              border: 'none',
-              background: !url.trim() || status === 'fetching' || status === 'saving' ? '#d4c9b0' : '#2c1f0e',
-              color: '#f5f0e6',
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: !url.trim() || status === 'fetching' || status === 'saving' ? 'not-allowed' : 'pointer',
+              width: '100%', padding: '18px 0', borderRadius: 14, border: '2px dashed',
+              borderColor: busy ? '#d4c9b0' : '#c4952a',
+              background: busy ? '#f5f0e6' : '#fffdf8',
+              color: busy ? '#8a7a60' : '#2c1f0e',
+              fontSize: 15, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             }}
           >
-            {status === 'fetching' ? '⏳ Extracting...' : status === 'saving' ? '💾 Saving...' : 'Save to CardHouse'}
+            {busy ? (imgStatus === 'reading' ? '🔍 Reading image...' : '💾 Saving...') : '📷 Upload screenshot or photo'}
           </button>
+
+          {imgStatus === 'success' && (
+            <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 10, background: '#e8f4e8', border: '1px solid #a8d5a8' }}>
+              <p style={{ fontSize: 13, color: '#2d6a2d', fontWeight: 600 }}>✓ Saved: {imgMessage}</p>
+              <p style={{ fontSize: 12, color: '#4a8a4a', marginTop: 2 }}>Upload another to add more</p>
+            </div>
+          )}
+          {imgStatus === 'error' && (
+            <p style={{ marginTop: 8, fontSize: 12, color: '#c0392b' }}>❌ {imgMessage}</p>
+          )}
         </div>
 
-        {status === 'success' && (
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 22 }}>✓</p>
-            <p style={{ fontSize: 14, color: '#2d6a2d', fontWeight: 600 }}>{message}</p>
-            <p style={{ fontSize: 13, color: '#8a7a60', marginTop: 4 }}>Paste another link to add more</p>
-          </div>
-        )}
+        {/* Divider */}
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
+          <span style={{ fontSize: 12, color: '#8a7a60' }}>or paste a link</span>
+          <div style={{ flex: 1, height: 1, background: '#e0d8c8' }} />
+        </div>
 
-        {status === 'error' && (
-          <p style={{ fontSize: 13, color: '#c0392b', textAlign: 'center', maxWidth: 360 }}>❌ {message}</p>
-        )}
+        {/* URL paste */}
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <input
+            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid #d4c9b0', background: '#fffdf8', color: '#2c1f0e', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            placeholder="https://www.yad2.co.il/item/..."
+            value={url}
+            onChange={e => { setUrl(e.target.value); setUrlStatus('idle'); setUrlMessage('') }}
+            onKeyDown={e => e.key === 'Enter' && handleUrlSave()}
+          />
+          <button
+            onClick={handleUrlSave}
+            disabled={!url.trim() || urlStatus === 'reading' || urlStatus === 'saving'}
+            style={{
+              padding: '12px 0', borderRadius: 12, border: 'none',
+              background: !url.trim() || urlStatus === 'reading' || urlStatus === 'saving' ? '#d4c9b0' : '#2c1f0e',
+              color: '#f5f0e6', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            {urlStatus === 'reading' ? '⏳ Extracting...' : urlStatus === 'saving' ? '💾 Saving...' : 'Save link'}
+          </button>
+          {urlStatus === 'success' && <p style={{ fontSize: 12, color: '#2d6a2d', fontWeight: 600 }}>✓ {urlMessage}</p>}
+          {urlStatus === 'error' && <p style={{ fontSize: 12, color: '#c0392b' }}>❌ {urlMessage}</p>}
+        </div>
       </div>
     </div>
   )

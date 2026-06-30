@@ -6,7 +6,9 @@
   padding: 0;
 }
 
-body {
+html, body {
+  height: 100%;
+  overflow: hidden;
   background: #f5f0e6;
   color: #2c1f0e;
   font-family: system-ui, sans-serif;
@@ -14,7 +16,8 @@ body {
 }
 
 #root {
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }

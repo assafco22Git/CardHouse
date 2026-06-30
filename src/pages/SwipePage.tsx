@@ -51,27 +51,25 @@ export function SwipePage({ user, onSignOut, isAdmin, onAdmin }: Props) {
           </div>
         </div>
 
-        {/* Filters */}
-        <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 12 }}>📍</span>
+        {/* Filters — single horizontal scroll row, never wraps */}
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', padding: '0 16px 8px' }}>
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center', width: 'max-content' }}>
+            <span style={{ fontSize: 11 }}>📍</span>
             {ISRAEL_CITIES.map(city => {
               const active = city === 'All' ? filters.location === '' : filters.location === city
               return (
                 <button key={city} onClick={() => setFilters(f => ({ ...f, location: city === 'All' ? '' : city }))}
-                  style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, border: '1px solid', cursor: 'pointer',
+                  style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, border: '1px solid', cursor: 'pointer', whiteSpace: 'nowrap',
                     background: active ? '#2c1f0e' : '#fffdf8', color: active ? '#f5f0e6' : '#5a4a2a',
                     borderColor: active ? '#2c1f0e' : '#d4c9b0' }}>
                   {city}
                 </button>
               )
             })}
-          </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 12 }}>💰</span>
+            <span style={{ fontSize: 11, marginLeft: 6 }}>💰</span>
             {BUDGET_OPTIONS.map(opt => (
               <button key={opt.label} onClick={() => setFilters(f => ({ ...f, maxBudget: opt.value }))}
-                style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, border: '1px solid', cursor: 'pointer',
+                style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, border: '1px solid', cursor: 'pointer', whiteSpace: 'nowrap',
                   background: filters.maxBudget === opt.value ? '#c4952a' : '#fffdf8',
                   color: filters.maxBudget === opt.value ? '#fffdf8' : '#5a4a2a',
                   borderColor: filters.maxBudget === opt.value ? '#c4952a' : '#d4c9b0' }}>

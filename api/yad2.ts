@@ -96,8 +96,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const html = await response.text()
 
-    if (html.includes('Are you for real') || html.includes('robot') || html.includes('captcha')) {
-      return res.status(429).json({ error: 'Yad2 blocked the request (captcha). Try again later.' })
+    if (
+      html.includes('Are you for real') ||
+      html.includes('robot') ||
+      html.includes('captcha') ||
+      html.includes('Radware') ||
+      html.includes('radware') ||
+      html.includes('Loader page') ||
+      !html.includes('__NEXT_DATA__')
+    ) {
+      return res.status(429).json({ error: 'Yad2 blocked the request (bot protection). The Chrome extension is more reliable for this.' })
     }
 
     const items = extractListings(html) as Record<string, unknown>[]

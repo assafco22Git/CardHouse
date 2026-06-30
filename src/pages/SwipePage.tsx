@@ -16,9 +16,9 @@ const ISRAEL_CITIES = ['All', 'Tel Aviv', 'Jerusalem', 'Haifa', 'Beer Sheva', 'E
 const BUDGET_OPTIONS = [
   { label: 'Any', value: null },
   { label: '₪500', value: 500 },
-  { label: '₪1,000', value: 1000 },
-  { label: '₪2,500', value: 2500 },
-  { label: '₪5,000', value: 5000 },
+  { label: '₪1K', value: 1000 },
+  { label: '₪2.5K', value: 2500 },
+  { label: '₪5K', value: 5000 },
 ]
 
 export function SwipePage({ user, onSignOut, isAdmin, onAdmin }: Props) {
@@ -26,105 +26,71 @@ export function SwipePage({ user, onSignOut, isAdmin, onAdmin }: Props) {
   const { cards, loading, recordSwipe } = useCards(user.id, filters)
 
   return (
-    <div className="flex flex-col min-h-dvh" style={{ background: '#f5f0e6' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#f5f0e6', overflow: 'hidden' }}>
+
       {/* Header */}
-      <header style={{ borderBottom: '1px solid #e0d8c8', background: '#f5f0e6' }}>
-        <div className="flex items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-4">
-            <span style={{ fontSize: 36 }}>🃏</span>
-            <span className="font-black tracking-tight" style={{ fontSize: 28, color: '#2c1f0e' }}>CardHouse</span>
+      <header style={{ borderBottom: '1px solid #e0d8c8', background: '#f5f0e6', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 24 }}>🃏</span>
+            <span style={{ fontWeight: 900, fontSize: 20, color: '#2c1f0e', letterSpacing: '-0.5px' }}>CardHouse</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {user.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt="avatar"
-                style={{ width: 42, height: 42, borderRadius: '50%', border: '2px solid #c4952a', flexShrink: 0 }}
-                referrerPolicy="no-referrer"
-              />
+              <img src={user.user_metadata.avatar_url} alt="avatar" referrerPolicy="no-referrer"
+                style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #c4952a', flexShrink: 0 }} />
             ) : (
-              <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f0e8d4', border: '2px solid #c4952a', color: '#8a6020', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {user.email?.[0]?.toUpperCase()}
               </div>
             )}
             {isAdmin && (
-              <button onClick={onAdmin} style={{ color: '#c4952a', fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                + Add
-              </button>
+              <button onClick={onAdmin} style={{ color: '#c4952a', fontSize: 13, fontWeight: 600 }}>+ Add</button>
             )}
-            <button onClick={onSignOut} style={{ color: '#8a7a60', fontSize: 14, whiteSpace: 'nowrap' }}>
-              Sign out
-            </button>
+            <button onClick={onSignOut} style={{ color: '#8a7a60', fontSize: 13 }}>Out</button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="px-6 pb-4 flex flex-wrap gap-3">
-          {/* Location */}
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: 13, color: '#8a7a60', fontWeight: 500 }}>📍</span>
-            <div className="flex gap-1 flex-wrap">
-              {ISRAEL_CITIES.map(city => (
-                <button
-                  key={city}
-                  onClick={() => setFilters(f => ({ ...f, location: city === 'All' ? '' : city }))}
-                  style={{
-                    fontSize: 12,
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    border: '1px solid',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    background: (city === 'All' ? filters.location === '' : filters.location === city) ? '#2c1f0e' : '#fffdf8',
-                    color: (city === 'All' ? filters.location === '' : filters.location === city) ? '#f5f0e6' : '#5a4a2a',
-                    borderColor: (city === 'All' ? filters.location === '' : filters.location === city) ? '#2c1f0e' : '#d4c9b0',
-                  }}
-                >
+        <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12 }}>📍</span>
+            {ISRAEL_CITIES.map(city => {
+              const active = city === 'All' ? filters.location === '' : filters.location === city
+              return (
+                <button key={city} onClick={() => setFilters(f => ({ ...f, location: city === 'All' ? '' : city }))}
+                  style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, border: '1px solid', cursor: 'pointer',
+                    background: active ? '#2c1f0e' : '#fffdf8', color: active ? '#f5f0e6' : '#5a4a2a',
+                    borderColor: active ? '#2c1f0e' : '#d4c9b0' }}>
                   {city}
                 </button>
-              ))}
-            </div>
+              )
+            })}
           </div>
-
-          {/* Budget */}
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: 13, color: '#8a7a60', fontWeight: 500 }}>💰</span>
-            <div className="flex gap-1 flex-wrap">
-              {BUDGET_OPTIONS.map(opt => (
-                <button
-                  key={opt.label}
-                  onClick={() => setFilters(f => ({ ...f, maxBudget: opt.value }))}
-                  style={{
-                    fontSize: 12,
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    border: '1px solid',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    background: filters.maxBudget === opt.value ? '#c4952a' : '#fffdf8',
-                    color: filters.maxBudget === opt.value ? '#fffdf8' : '#5a4a2a',
-                    borderColor: filters.maxBudget === opt.value ? '#c4952a' : '#d4c9b0',
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12 }}>💰</span>
+            {BUDGET_OPTIONS.map(opt => (
+              <button key={opt.label} onClick={() => setFilters(f => ({ ...f, maxBudget: opt.value }))}
+                style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, border: '1px solid', cursor: 'pointer',
+                  background: filters.maxBudget === opt.value ? '#c4952a' : '#fffdf8',
+                  color: filters.maxBudget === opt.value ? '#fffdf8' : '#5a4a2a',
+                  borderColor: filters.maxBudget === opt.value ? '#c4952a' : '#d4c9b0' }}>
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>
 
-      {/* Main */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 gap-8">
+      {/* Main — fills remaining space */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '12px 16px', gap: 12, overflow: 'hidden', minHeight: 0 }}>
         {loading ? (
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             {[0, 1, 2].map(i => (
-              <motion.div
-                key={i}
+              <motion.div key={i}
                 style={{ width: 8, height: 8, background: '#c4952a', borderRadius: '50%' }}
                 animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.15 }}
-              />
+                transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.15 }} />
             ))}
           </div>
         ) : (
@@ -132,21 +98,15 @@ export function SwipePage({ user, onSignOut, isAdmin, onAdmin }: Props) {
         )}
 
         {!loading && cards.length > 0 && (
-          <div className="flex gap-6">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+          <div style={{ display: 'flex', gap: 24, flexShrink: 0 }}>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               onClick={() => recordSwipe(cards[0].id, 'left')}
-              style={{ width: 56, height: 56, borderRadius: '50%', background: '#fce8e8', border: '1.5px solid #e08080', color: '#c0392b', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+              style={{ width: 60, height: 60, borderRadius: '50%', background: '#fce8e8', border: '2px solid #e08080', color: '#c0392b', fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               ✕
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               onClick={() => recordSwipe(cards[0].id, 'right')}
-              style={{ width: 56, height: 56, borderRadius: '50%', background: '#f5ecd4', border: '1.5px solid #c4952a', color: '#8a6020', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+              style={{ width: 60, height: 60, borderRadius: '50%', background: '#f5ecd4', border: '2px solid #c4952a', color: '#8a6020', fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               ♥
             </motion.button>
           </div>

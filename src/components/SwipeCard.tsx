@@ -13,9 +13,14 @@ const SUITS = ['♠', '♥', '♦', '♣']
 
 export function SwipeCard({ card, onSwipe, isTop }: Props) {
   const x = useMotionValue(0)
-  const rotate = useTransform(x, [-200, 200], [-25, 25])
-  const heartOpacity = useTransform(x, [-150, -40], [1, 0])
-  const passOpacity = useTransform(x, [40, 150], [0, 1])
+  const rotate = useTransform(x, [-200, 200], [-20, 20])
+
+  // Kick in much sooner, fully opaque quickly
+  const heartOpacity = useTransform(x, [-30, -90], [0, 1])
+  const passOpacity = useTransform(x, [30, 90], [0, 1])
+  const heartScale = useTransform(x, [-30, -90], [0.6, 1])
+  const passScale = useTransform(x, [30, 90], [0.6, 1])
+
   const [gone, setGone] = useState(false)
 
   const suit = SUITS[card.title.length % 4]
@@ -33,16 +38,15 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
   })
 
   const handleDragEnd = (_: unknown, info: { offset: { x: number } }) => {
-    if (info.offset.x > 100) triggerSwipe('right')
-    else if (info.offset.x < -100) triggerSwipe('left')
+    if (info.offset.x > 80) triggerSwipe('right')
+    else if (info.offset.x < -80) triggerSwipe('left')
     else x.set(0)
   }
 
   if (!isTop) {
     return (
       <motion.div
-        className="absolute inset-0 rounded-2xl"
-        style={{ scale: 0.95, y: 16, background: '#ede8dc', border: '1px solid #d4c9b0' }}
+        style={{ position: 'absolute', inset: 0, borderRadius: 20, scale: 0.95, y: 12, background: '#ede8dc', border: '1px solid #d4c9b0' }}
       />
     )
   }
@@ -51,60 +55,75 @@ export function SwipeCard({ card, onSwipe, isTop }: Props) {
     <AnimatePresence>
       {!gone && (
         <>
-          {/* Fullscreen overlays — rendered outside the card */}
+          {/* LOVE overlay — left swipe */}
           <motion.div
-            className="fixed inset-0 flex flex-col items-center justify-center gap-4 pointer-events-none z-50"
-            style={{ opacity: heartOpacity, background: 'rgba(255,182,193,0.55)' }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 50, pointerEvents: 'none',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
+              background: 'rgba(255, 80, 160, 0.72)',
+              opacity: heartOpacity, scale: heartScale,
+            }}
           >
-            <span style={{ fontSize: 120 }}>💕</span>
-            <span className="font-black tracking-widest" style={{ fontSize: 48, color: '#d63384' }}>LOVE</span>
+            <span style={{ fontSize: 100, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }}>💕</span>
+            <span style={{ fontSize: 52, fontWeight: 900, color: '#fff', letterSpacing: 4, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>LOVE</span>
           </motion.div>
 
+          {/* PASS overlay — right swipe */}
           <motion.div
-            className="fixed inset-0 flex flex-col items-center justify-center gap-4 pointer-events-none z-50"
-            style={{ opacity: passOpacity, background: 'rgba(160,160,160,0.45)' }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 50, pointerEvents: 'none',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
+              background: 'rgba(60, 60, 60, 0.72)',
+              opacity: passOpacity, scale: passScale,
+            }}
           >
-            <span style={{ fontSize: 120 }}>👋</span>
-            <span className="font-black tracking-widest" style={{ fontSize: 48, color: '#555' }}>PASS</span>
+            <span style={{ fontSize: 100, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }}>👋</span>
+            <span style={{ fontSize: 52, fontWeight: 900, color: '#fff', letterSpacing: 4, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>PASS</span>
           </motion.div>
 
           {/* Card */}
           <motion.div
             {...handlers}
-            className="absolute inset-0 rounded-2xl cursor-grab active:cursor-grabbing select-none overflow-hidden flex flex-col"
-            style={{ x, rotate, background: '#fffdf8', border: '1px solid #d4c9b0', boxShadow: '0 4px 24px rgba(44,31,14,0.10)' }}
+            style={{
+              position: 'absolute', inset: 0, borderRadius: 20,
+              cursor: 'grab', userSelect: 'none', overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
+              background: '#fffdf8', border: '1px solid #d4c9b0',
+              boxShadow: '0 6px 32px rgba(44,31,14,0.13)',
+              x, rotate,
+            }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={handleDragEnd}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
+            whileTap={{ cursor: 'grabbing' }}
           >
             {card.image_url ? (
-              <img src={card.image_url} alt={card.title} className="w-full h-48 object-cover" />
+              <img src={card.image_url} alt={card.title} style={{ width: '100%', flex: 1, objectFit: 'cover', minHeight: 0 }} />
             ) : (
-              <div className="flex-1 flex items-center justify-center" style={{ background: '#f5f0e6' }}>
-                <span style={{ fontSize: 120, color: isRed ? '#c0392b' : '#2c1f0e', opacity: 0.15, lineHeight: 1 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f0e6', minHeight: 0 }}>
+                <span style={{ fontSize: 100, color: isRed ? '#c0392b' : '#2c1f0e', opacity: 0.12, lineHeight: 1 }}>
                   {suit}
                 </span>
               </div>
             )}
 
-            <div className="p-5 shrink-0">
-              <h2 className="text-xl font-bold mb-1" style={{ color: '#2c1f0e' }}>{card.title}</h2>
-              <p className="text-sm leading-relaxed" style={{ color: '#8a7a60' }}>{card.description}</p>
-              <div className="flex flex-wrap gap-2 mt-3">
+            <div style={{ padding: '14px 16px', flexShrink: 0 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#2c1f0e', margin: '0 0 4px' }}>{card.title}</h2>
+              <p style={{ fontSize: 13, color: '#8a7a60', margin: 0, lineHeight: 1.4 }}>{card.description}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                 {card.location && (
-                  <span className="px-2 py-1 text-xs rounded-full" style={{ background: '#e8f4e8', color: '#2d6a2d', border: '1px solid #a8d5a8' }}>
+                  <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#e8f4e8', color: '#2d6a2d', border: '1px solid #a8d5a8' }}>
                     📍 {card.location}
                   </span>
                 )}
                 {card.budget && (
-                  <span className="px-2 py-1 text-xs rounded-full" style={{ background: '#f0e8d4', color: '#8a6020', border: '1px solid #c8a860' }}>
+                  <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0e8d4', color: '#8a6020', border: '1px solid #c8a860' }}>
                     ₪{card.budget.toLocaleString()}
                   </span>
                 )}
                 {card.tags?.map(tag => (
-                  <span key={tag} className="px-2 py-1 text-xs rounded-full" style={{ background: '#f0e8d4', color: '#8a6020', border: '1px solid #c8a860' }}>
+                  <span key={tag} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#f0e8d4', color: '#8a6020', border: '1px solid #c8a860' }}>
                     {tag}
                   </span>
                 ))}
